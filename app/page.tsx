@@ -1,7 +1,7 @@
 "use client";
 
 import {useState} from "react";
-import {messaging} from "../firebase1/firebaseCient";
+import {messaging} from "../firebase/firebaseClient";
 import {getToken} from "firebase/messaging";
 import axios from "axios";
 
@@ -19,7 +19,7 @@ const Home = () => {
 
         // 알림 권한 요청 및 토큰 발급
         const permission = await Notification.requestPermission();
-        if (permission === "granted") {
+        if (permission === "granted" && messaging) {
           // registration 객체를 옵션에 함께 전달합니다.
           getToken(messaging, {
             vapidKey:
