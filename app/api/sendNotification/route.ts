@@ -19,6 +19,7 @@ if (!admin.apps.length) {
 // POST 메서드 처리 핸들러
 export async function POST(request: Request) {
   try {
+    console.log("알림 전송 요청 받음");
     const {token, title, body} = await request.json();
 
     if (!token || !title || !body) {

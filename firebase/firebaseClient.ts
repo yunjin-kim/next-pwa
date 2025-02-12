@@ -1,7 +1,5 @@
-"use client";
-
 import {initializeApp} from "firebase/app";
-import {getMessaging, isSupported} from "firebase/messaging";
+import {getMessaging, isSupported, onMessage} from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBice1UYaz_f7YqQm_Z893C4sxnBuw-RBA",
@@ -14,17 +12,21 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// messaging 초기화는 브라우저 환경에서만 진행합니다.
 let messaging: ReturnType<typeof getMessaging> | null = null;
 
 if (typeof window !== "undefined") {
-  // Firebase Messaging이 현재 환경에서 지원되는지 확인합니다.
+  // Only initialize messaging if we're in the browser
   isSupported()
     .then((supported) => {
-      if (supported) {
-        messaging = getMessaging(app);
-      } else {
+      if (!supported) {
         console.warn("Firebase Messaging은 이 브라우저에서 지원되지 않습니다.");
+      } else {
+        messaging = getMessaging(app);
+        onMessage(messaging, (payload) => {
+          console.log("Message received. ", payload);
+          // notification을 받았을 때 처리하는 로직을 작성합니다.
+          // 하면 끝
+        });
       }
     })
     .catch((err) => {
