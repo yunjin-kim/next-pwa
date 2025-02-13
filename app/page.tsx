@@ -55,8 +55,11 @@ const Home = () => {
       return;
     }
 
+    await axios.post("/api/sendToken", {token});
+  };
+
+  const pushNotification = async () => {
     await axios.post("/api/sendNotification", {
-      token,
       title: "푸시 알림 테스트",
       body: "푸시 알림이 성공적으로 전송되었습니다.",
     });
@@ -84,6 +87,8 @@ const Home = () => {
       )}
 
       <button onClick={fetchFCMTokenToServer}>토큰 서버로 전달</button>
+
+      <button onClick={pushNotification}>푸시 알림 전송</button>
     </div>
   );
 };
