@@ -26,6 +26,15 @@ if (typeof window !== "undefined") {
           console.log("Message received. ", payload);
           // notification을 받았을 때 처리하는 로직을 작성합니다.
           // 하면 끝
+          Notification.requestPermission().then((permission) => {
+            // If the user accepts, let's create a notification
+            if (permission === "granted") {
+              new Notification(payload.notification?.title || "", {
+                body: payload.notification?.body || "",
+              });
+              // …
+            }
+          });
         });
       }
     })
