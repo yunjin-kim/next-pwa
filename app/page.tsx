@@ -59,14 +59,22 @@ const Home = () => {
   };
 
   const pushNotification = async () => {
-    await axios.post("/api/sendNotification", {
+    const res = await axios.post("/api/sendNotification", {
       title: "푸시 알림 테스트",
       body: "푸시 알림이 성공적으로 전송되었습니다.",
     });
+    console.log("pushNotification결과", res.data);
   };
 
   return (
-    <div style={{padding: "2rem"}}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        padding: "2rem",
+      }}
+    >
       <h1>푸시 알림 예제</h1>
       <button onClick={registerServiceWorkerAndRequestToken}>
         알림 허용하는 척하면서 토큰 발급

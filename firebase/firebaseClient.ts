@@ -29,8 +29,8 @@ if (typeof window !== "undefined") {
           Notification.requestPermission().then((permission) => {
             // If the user accepts, let's create a notification
             if (permission === "granted") {
-              new Notification(payload.notification?.title || "", {
-                body: payload.notification?.body || "",
+              new Notification(payload.data?.title || "", {
+                body: payload.data?.body || "",
               });
               // …
             }

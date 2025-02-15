@@ -1,8 +1,8 @@
 // app/api/sendNotification/route.ts
 import {NextResponse} from "next/server";
 import admin from "firebase-admin";
-import {tokenStorage} from "../sendToken/route";
 import {getMessaging} from "firebase-admin/messaging";
+import {supabase} from "../../lib/supabaseClient";
 
 // Firebase Admin 초기화 (한 번만 실행)
 if (!admin.apps.length) {
@@ -33,44 +33,40 @@ export async function POST(request: Request) {
 
     console.log("알림 전송 요청:", {title, body});
 
-    const tokens = Array.from(tokenStorage.values());
+    const {data, error} = await supabase
+      .from("user_fcm_tokens") // 본인이 만든 테이블 이름
+      .select("fcm_token");
 
-    console.log("저장된 토큰:", tokens);
-
-    if (tokens.length === 0) {
-      return NextResponse.json({error: "토큰이 없습니다."}, {status: 400});
+    if (error) {
+      console.error("DB 조회 오류:", error);
+      return NextResponse.json({error: error.message}, {status: 500});
     }
+
+    if (!data || data.length === 0) {
+      return NextResponse.json(
+        {error: "등록된 토큰이 없습니다."},
+        {status: 400}
+      );
+    }
+
+    // 2) 가져온 데이터에서 토큰 배열 추출
+    const tokens = data.map((row) => row.fcm_token);
+
+    console.log("토큰 목록:", tokens);
 
     const message = {
       data: {
         title,
         body,
       },
-      // tokens
+      tokens,
     };
 
-    admin
-      .messaging()
-      .sendMulticast({tokens, ...message})
-      .then((response) => {
-        console.log("멀티캐스트 알림 전송 성공:", response);
-      })
-      .catch((error) => {
-        console.error("알림 전송 오류:", error);
-      }); // admin
-    //   .messaging()
-    //   .sendMulticast({tokens, ...messagePayload})
-    //   .then((response) => {
-    //     console.log("멀티캐스트 알림 전송 성공:", response);
-    //   })
-    //   .catch((error) => {
-    //     console.error("알림 전송 오류:", error);
-    //   });
+    const response = await getMessaging().sendEachForMulticast(message);
+    // await getMessaging().send(message);
+    console.log("멀티캐스트 알림 전송 성공:", response);
 
-    // 모든 토큰에 메시지 전송
-    // const response = await admin.messaging().sendToDevice(tokens, message);
-    // const response = await admin.messaging().send(message);
-    // return NextResponse.json({message: "알림 전송 성공", response});
+    return NextResponse.json({message: "알림 전송 성공", response});
   } catch (error) {
     console.error("알림 전송 에러:", error);
     return NextResponse.json({error: "알림 전송 실패"}, {status: 500});
