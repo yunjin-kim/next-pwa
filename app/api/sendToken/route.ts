@@ -2,8 +2,6 @@ import {NextResponse} from "next/server";
 import {supabase} from "../../lib/supabaseClient";
 import {v4 as uuidv4} from "uuid";
 
-export const tokenStorage = new Map<string, string>();
-
 export async function POST(request: Request) {
   try {
     const {token} = await request.json();
