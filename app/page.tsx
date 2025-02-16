@@ -1,9 +1,10 @@
 "use client";
 
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {messaging} from "../firebase/firebaseClient";
 import {getToken} from "firebase/messaging";
 import axios from "axios";
+import OfflineAllow from "./offlineAllow";
 
 const Home = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -66,6 +67,16 @@ const Home = () => {
     console.log("pushNotification결과", res.data);
   };
 
+  useEffect(() => {
+    // 서비스 워커 등록
+    // if ("serviceWorker" in navigator) {
+    //   navigator.serviceWorker
+    //     .register("/sw.js")
+    //     .then((reg) => console.log("서비스 워커 등록 성공:", reg))
+    //     .catch((err) => console.error("서비스 워커 등록 실패:", err));
+    // }
+  }, []);
+
   return (
     <div
       style={{
@@ -75,6 +86,8 @@ const Home = () => {
         padding: "2rem",
       }}
     >
+      <OfflineAllow />
+
       <h1>푸시 알림 예제</h1>
       <button onClick={registerServiceWorkerAndRequestToken}>
         알림 허용하는 척하면서 토큰 발급
