@@ -68,13 +68,12 @@ const Home = () => {
   };
 
   useEffect(() => {
-    // 서비스 워커 등록
-    // if ("serviceWorker" in navigator) {
-    //   navigator.serviceWorker
-    //     .register("/sw.js")
-    //     .then((reg) => console.log("서비스 워커 등록 성공:", reg))
-    //     .catch((err) => console.error("서비스 워커 등록 실패:", err));
-    // }
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => console.log("서비스 워커 등록 성공:", reg))
+        .catch((err) => console.error("서비스 워커 등록 실패:", err));
+    }
   }, []);
 
   return (
