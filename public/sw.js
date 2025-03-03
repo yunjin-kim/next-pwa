@@ -110,9 +110,41 @@ messaging.onBackgroundMessage(function (payload) {
 
   const notificationTitle = payload.notification?.title || "알림";
   const notificationOptions = {
+    title: Date.now().toString(),
     body: payload.notification?.body || "",
     icon: "/firebase-logo.png", // 적절한 아이콘 파일 경로
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
+self.addEventListener("sync", (event) => {
+  if (event.tag === "sync-data") {
+    event.waitUntil(syncData());
+  }
+});
+
+async function syncData() {
+  try {
+    // IndexedDB나 다른 스토리지에서 오프라인 저장 데이터를 가져옵니다.
+    const offlineData = await getQueuedData(); // getQueuedData는 사용자가 구현하는 함수
+    // 저장된 데이터를 순회하며 서버의 API 엔드포인트로 전송합니다.
+    for (const data of offlineData) {
+      await fetch("/api/content", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data),
+      });
+      // 전송에 성공하면 해당 데이터는 오프라인 큐에서 제거합니다.
+    }
+  } catch (error) {
+    console.error("Background sync 실패:", error);
+    throw error;
+  }
+}
+
+// IndexedDB 등에서 데이터를 가져오는 함수를 구현해야 합니다.
+async function getQueuedData() {
+  // 예시: IndexedDB에서 오프라인 데이터를 읽어오는 로직
+  return []; // 실제 구현에 맞게 수정하세요.
+}

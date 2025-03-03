@@ -63,8 +63,6 @@ export async function POST(request: Request) {
     };
 
     const response = await getMessaging().sendEachForMulticast(message);
-    // await getMessaging().send(message);
-    console.log("멀티캐스트 알림 전송 성공:", response);
 
     return NextResponse.json({message: "알림 전송 성공", response});
   } catch (error) {

@@ -1,10 +1,11 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {messaging} from "../firebase/firebaseClient";
 import {getToken} from "firebase/messaging";
 import axios from "axios";
 import OfflineAllow from "./offlineAllow";
+import {getQueuedData, removeData, saveDataLocally} from "./utils/offlinedb";
 
 const Home = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -67,6 +68,91 @@ const Home = () => {
     console.log("pushNotification결과", res.data);
   };
 
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const handleOnline = async () => {
+      console.log("온라인 상태 감지됨: 오프라인 데이터를 서버로 동기화합니다.");
+      try {
+        // IndexedDB에서 저장된 모든 데이터를 가져옵니다.
+        const offlineData = await getQueuedData();
+        for (const data of offlineData) {
+          try {
+            // 오프라인에 저장된 데이터를 서버 API로 전송
+            const res = await axios.post("/api/content", data);
+            console.log("오프라인 데이터 서버 전송 성공:", res.data);
+            // 전송 성공 시 IndexedDB에서 해당 데이터를 삭제
+            if (data.id) {
+              await removeData(data.id);
+            } else {
+              console.error("전송 성공, 하지만 ID가 없습니다.");
+            }
+          } catch (error) {
+            console.error("오프라인 데이터 전송 실패:", error);
+            // 특정 데이터 전송 실패 시 해당 데이터는 그대로 유지하여 다음에 재시도할 수 있습니다.
+          }
+        }
+      } catch (error) {
+        console.error("오프라인 데이터 동기화 중 에러 발생:", error);
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, []);
+
+  const postContent = async () => {
+    if (!contentRef.current) return;
+
+    console.log("contentRef.current", contentRef.current.value);
+
+    const contentData = contentRef.current.value;
+
+    try {
+      const res = await axios.post(
+        "/api/content",
+        JSON.stringify({
+          id: Date.now(),
+          content: contentData,
+        })
+      );
+      console.log("fetchContent결과", res.data);
+    } catch (error) {
+      console.error("서버 전송 실패, 로컬에 저장합니다.", error);
+      // 네트워크 문제 등으로 전송 실패 시 IndexedDB에 저장
+      await saveDataLocally({
+        id: Date.now(),
+        content: contentData,
+      });
+    }
+
+    if ("serviceWorker" in navigator && "SyncManager" in window) {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.sync
+          .register("sync-data")
+          .then(() => console.log("Background sync 등록됨"))
+          .catch((err) => console.error("Background sync 등록 실패:", err));
+      });
+    }
+  };
+
+  const getContentRef = useRef<HTMLTextAreaElement>(null);
+
+  const fetchContent = async () => {
+    if (!getContentRef.current) return;
+
+    console.log("getContentRef.current", getContentRef.current.value);
+
+    const res = await axios.get("/api/content");
+    console.log("fetchContent결과", res.data);
+    const contentRes = await res.data.data
+      .map((d) => `${d.id}: ${d.content}`)
+      .join("\n");
+    getContentRef.current.value = contentRes;
+  };
+
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -109,6 +195,14 @@ const Home = () => {
       <button onClick={fetchFCMTokenToServer}>토큰 서버로 전달</button>
 
       <button onClick={pushNotification}>푸시 알림 전송</button>
+
+      <textarea ref={contentRef} rows={5} style={{width: "100%"}} />
+
+      <button onClick={postContent}>콘텐츠 저장</button>
+
+      <textarea ref={getContentRef} rows={5} style={{width: "100%"}} />
+
+      <button onClick={fetchContent}>콘텐츠 불러오기</button>
     </div>
   );
 };
