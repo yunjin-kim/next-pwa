@@ -162,6 +162,16 @@ const Home = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchContent();
+    }, 2000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
   return (
     <div
       style={{
