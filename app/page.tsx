@@ -148,7 +148,7 @@ const Home = () => {
     const res = await axios.get("/api/content");
     console.log("fetchContent결과", res.data);
     const contentRes = await res.data.data
-      .map((d) => `${d.id}: ${d.content}`)
+      .map((data) => `${data.id}: ${data.content}`)
       .join("\n");
     getContentRef.current.value = contentRes;
   };

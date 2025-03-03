@@ -1,6 +1,6 @@
 interface OfflineData {
   id?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // IndexedDB 데이터베이스 열기 및 초기화 함수
