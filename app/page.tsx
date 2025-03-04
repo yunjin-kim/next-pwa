@@ -145,10 +145,8 @@ const Home = () => {
   const fetchContent = async () => {
     if (!getContentRef.current) return;
 
-    console.log("getContentRef.current", getContentRef.current.value);
-
     const res = await axios.get("/api/content");
-    console.log("fetchContent결과", res.data);
+
     const contentRes = await res.data.data
       // @ts-expect-error
       .map((data) => `${data.id}: ${data.content}`)
