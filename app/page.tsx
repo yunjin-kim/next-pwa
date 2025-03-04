@@ -130,9 +130,11 @@ const Home = () => {
 
     if ("serviceWorker" in navigator && "SyncManager" in window) {
       navigator.serviceWorker.ready.then((registration) => {
+        // @ts-expect-error
         registration.sync
           .register("sync-data")
           .then(() => console.log("Background sync 등록됨"))
+          // @ts-expect-error
           .catch((err) => console.error("Background sync 등록 실패:", err));
       });
     }
@@ -148,6 +150,7 @@ const Home = () => {
     const res = await axios.get("/api/content");
     console.log("fetchContent결과", res.data);
     const contentRes = await res.data.data
+      // @ts-expect-error
       .map((data) => `${data.id}: ${data.content}`)
       .join("\n");
     getContentRef.current.value = contentRes;

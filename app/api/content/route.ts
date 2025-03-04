@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    return NextResponse.json({message: "컨텐츠 저장 성공", data: contentData});
+    return NextResponse.json({message: "컨텐츠 로드 성공", data: contentData});
   } catch (error) {
     console.error("컨텐츠 전송 에러:", error);
     return NextResponse.json({error: "컨텐츠 전송 실패"}, {status: 500});
